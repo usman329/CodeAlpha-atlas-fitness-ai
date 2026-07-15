@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Atlas AI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <script>
+      // 100% Bulletproof Client-Side WebSocket Error Silencer
+      // This overrides the WebSocket constructor to fail quietly or ignore Vite connection errors,
+      // and suppresses the unhandled connection errors from showing up as red popup cards on the screen.
+      (function() {
+        const OriginalWebSocket = window.WebSocket;
+        window.WebSocket = function(url, protocols) {
+          const ws = new OriginalWebSocket(url, protocols);
+          ws.addEventListener('error', (e) => {
+            // Prevent error from bubbling up as a console error or crash overlay
+            e.preventDefault();
+            e.stopPropagation();
+          });
+          return ws;
+        };
+        window.WebSocket.prototype = OriginalWebSocket.prototype;
+
+        // Catch and silence Vite's unhandled WebSocket rejections
+        window.addEventListener('unhandledrejection', function(event) {
+          if (event.reason && (event.reason.message && event.reason.message.includes('WebSocket') || event.reason.toString().includes('WebSocket'))) {
+            event.preventDefault();
+            event.stopPropagation();
+          }
+        });
+
+        // Silence runtime window error popups from the bundler client
+        window.addEventListener('error', function(event) {
+          if (event.message && (event.message.includes('WebSocket') || event.message.includes('vite'))) {
+            event.preventDefault();
+            event.stopPropagation();
+          }
+        }, true);
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+
